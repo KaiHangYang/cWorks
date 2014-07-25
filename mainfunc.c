@@ -58,6 +58,7 @@ typedef struct cloth_type {
 int clothInfoChangeType = 0;
 CLO_TYPE * mainchain;
 GtkTreeView * treeview;
+GtkWidget * window;
 /***************系统的主要功能***************/
 
 //辅助函数1 json 解析
@@ -309,23 +310,35 @@ void cloth_type_info_check(CLO_TYPE * tmp) {
 	}
 }
 
-//type的重复性检测
-int cloth_type_check(CLO_TYPE * chain, char typeNum) {
-	CLO_TYPE * tmp = chain;
-	while (tmp != NULL) {
-		if (tmp->type_num == typeNum) {
-			return 0;
+//type的重复性检测 n表示num m表示name
+int cloth_type_check(char pattern, char * content) {
+	CLO_TYPE * tmp = mainchain;
+
+	if (pattern == 'n') {
+		while (tmp != NULL) {
+			if (tmp->type_num == content[0]) {
+				return 0;
+			}
+			tmp = tmp->type_next;
 		}
-		tmp = tmp->type_next;
+		return 1;
 	}
-	return 1;
+	else if (pattern == 'm') {
+		while (tmp != NULL) {
+			if (strcmp(tmp->type_name, content) == 0) {
+				return 0;
+			}
+			tmp = tmp->type_next;
+		}
+		return 1;
+	}
 }
 //查找目标节点pattern是n或m,n的话是以编号查找,m的话是以名字查找
-CLO_TYPE * cloth_type_serach(CLO_TYPE * chain, char pattern, char * content) {
-	CLO_TYPE * tmpChain = chain;
-	CLO_TYPE * prevChain = chain;
+CLO_TYPE * cloth_type_search(char pattern, char * content) {
+	CLO_TYPE * tmpChain = mainchain;
+	CLO_TYPE * prevChain = mainchain;
 	if (pattern == 'n') {
-		if (chain->type_num == content[0]) {
+		if (tmpChain->type_num == content[0]) {
 			return NULL;
 		}
 		while (tmpChain != NULL) {
@@ -339,7 +352,7 @@ CLO_TYPE * cloth_type_serach(CLO_TYPE * chain, char pattern, char * content) {
 		}
 	}
 	else if (pattern == 'm') {
-		if (strcmp(chain->type_name, content) == 0) {
+		if (strcmp(mainchain->type_name, content) == 0) {
 			return NULL;
 		}
 		while (tmpChain != NULL) {
@@ -361,7 +374,7 @@ void cloth_type_info_delete(char * str) {
 	CLO_TYPE * tmpChain;
 
 	if (strlen(str) == 1) {
-		tmpChain = cloth_type_serach(chain, 'n', str);
+		tmpChain = cloth_type_search('n', str);
 
 		if (tmpChain == NULL) {
 			chain = chain->type_next;
@@ -372,7 +385,7 @@ void cloth_type_info_delete(char * str) {
 
 	}
 	else if (strlen(str) > 1) {
-		tmpChain = cloth_type_serach(chain, 'm', str);
+		tmpChain = cloth_type_search('m', str);
 
 		if (tmpChain == NULL) {
 			chain = chain->type_next;
@@ -385,7 +398,7 @@ void cloth_type_info_delete(char * str) {
 	mainchain = chain;
 }
 //服装分类数据更改 pattern 表示更改的数据类型 n表示标号 m表示名字 content, 这里的node是由上面的search函数获得的
-void cloth_type_info_change(CLO_TYPE * node, CLO_TYPE * mainchain,char pattern, char * content) {
+void cloth_type_info_change(CLO_TYPE * node, char pattern, char * content) {
 
 	CLO_TYPE * changeNode;
 	if (node == NULL) {
@@ -396,34 +409,52 @@ void cloth_type_info_change(CLO_TYPE * node, CLO_TYPE * mainchain,char pattern, 
 	}
 
 	if (pattern == 'n') {
-		changeNode->type_num = content[0];
 
-		cloth_type_info_check(changeNode);
+		if (cloth_type_check(pattern, content)) {
+			changeNode->type_num = content[0];
+
+			cloth_type_info_check(changeNode);
+		}
 	}
 	else if (pattern == 'm') {
-		strcpy(changeNode->type_name, content);
+		if (cloth_type_check(pattern, content)) {
+			strcpy(changeNode->type_name, content);
+		}
 	}
 }
 //服装分类信息的录入
-void cloth_type_info_input(CLO_TYPE * chain, char typeNum, char * typeName) {
+int cloth_type_info_input(char * typeNum, char * typeName) {
 
 	CLO_TYPE * chainEnd;
-	CLO_TYPE * tmp = chain;
+	CLO_TYPE * tmp = mainchain;
 
-	if(cloth_type_check(chain, typeNum)) {
-		while (tmp->type_next != NULL) {
-			tmp = tmp->type_next;
+	if(cloth_type_check('n' , typeNum)) {
+
+		if (cloth_type_check('m', typeName)) {
+
+			while (tmp->type_next != NULL) {
+				tmp = tmp->type_next;
+			}
+
+			chainEnd = tmp;
+			chainEnd->type_next = (CLO_TYPE *)malloc(sizeof(CLO_TYPE));
+			chainEnd = chainEnd->type_next;
+
+			chainEnd->type_num = typeNum[0];
+			strcpy(chainEnd->type_name, typeName);
+
+			chainEnd->type_next = NULL;
+		}
+		else {
+			return 0;
 		}
 
-		chainEnd = tmp;
-		chainEnd->type_next = (CLO_TYPE *)malloc(sizeof(CLO_TYPE));
-		chainEnd = chainEnd->type_next;
-
-		chainEnd->type_num = typeNum;
-		strcpy(chainEnd->type_name, typeName);
-
-		chainEnd->type_next = NULL;
 	}
+	else {
+		return 0;
+	}
+
+	return 1;
 }
 
 /*clothbase 数据处理*/
@@ -499,9 +530,9 @@ void cloth_base_info_delete(char type, char * clothname) {
 	}
 }
 //数据更改
-void cloth_base_info_change(CLO_BASE * node, CLO_TYPE * chain,char prevtype, char nowtype, char * clothname, char clothsex, float clothprice) {
+void cloth_base_info_change(CLO_BASE * node, char prevtype, char nowtype, char * clothname, char clothsex, float clothprice) {
 	CLO_BASE * changeNode, * tmpbase;
-	CLO_TYPE * tmp = chain;
+	CLO_TYPE * tmp = mainchain;
 
 	if(node == NULL) {
 		while(tmp != NULL) {
@@ -525,7 +556,7 @@ void cloth_base_info_change(CLO_BASE * node, CLO_TYPE * chain,char prevtype, cha
 		//这里的东西显然不够
 	}
 	else {
-		tmp = chain;
+		tmp = mainchain;
 
 		while(tmp != NULL) {
 			if(tmp->type_num == nowtype) {
@@ -859,6 +890,7 @@ void show_info_all(GtkWidget * widget, char * pattern) {
 		show_type_info(tmptype, 1);
 	}
 	else if (pattern[0] == 'b') {
+
 		if (tmptype != NULL) {
 			show_base_info(tmptype->base_info, 1);
 			tmptype = tmptype->type_next;
@@ -954,8 +986,82 @@ void cloth_info_delete(GtkWidget * widget, GtkTreeSelection * selection) {
 	}
 }
 //再者是信息的更改功能
-void cloth_info_change(GtkWidget * widget, ) {
+void cloth_info_change(GtkWidget * widget, GtkTreeSelection * selection) {
 
+	CLO_TYPE * tmp = mainchain;
+	GtkWidget * dialog;
+	GtkWidget * box = gtk_grid_new();
+	GtkWidget * entry1, * entry2, * entry3, * entry4;
+	GtkWidget * label1, * label2, * label3, * label4;
+	GtkTreeIter iter;
+	GtkTreeModel * model;
+
+	if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		return;
+	}
+
+	if (clothInfoChangeType == 0) {
+		return;
+	}
+	else if (clothInfoChangeType == 1) {
+		char * typeNum, * typeName;
+		char * tmpnum, * tmpname;
+		GtkEntryBuffer * buffer;
+
+		tmpnum = (char *)malloc(2);
+		tmpname = (char *)malloc(21);
+
+		gtk_tree_model_get(model, &iter, 0, &typeNum, 1, &typeName, -1);
+		entry1 = gtk_entry_new();
+		label1 = gtk_label_new("分类编码");
+		entry2 = gtk_entry_new();
+		label2 = gtk_label_new("分类名称");
+
+		gtk_grid_set_row_spacing (GTK_GRID (box), 5);
+		gtk_grid_attach(GTK_GRID(box), label1, 0, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label2, 0, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry1, 1, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry2, 1, 1, 1, 1);
+
+		dialog = gtk_dialog_new_with_buttons("更改分类信息", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+
+		GtkWidget * content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+		gtk_container_add(GTK_CONTAINER(content), box);
+
+		CLO_TYPE * node = cloth_type_search('m', typeName);
+
+		gtk_widget_show_all(dialog);
+
+		int response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+		if (response == GTK_RESPONSE_ACCEPT) {
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry1));
+			strcpy(tmpnum, gtk_entry_buffer_get_text(buffer));
+			tmpnum[1] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry2));
+			strcpy(tmpname, gtk_entry_buffer_get_text(buffer));
+			tmpname[20] = '\0';
+
+			if (tmpnum[0] >= '1' && tmpnum[0] <= '9') {
+				cloth_type_info_change(node, 'n', tmpnum);
+			}
+
+			if (tmpname[0] != '\0') {
+				cloth_type_info_change(node, 'm', tmpname);
+			}
+
+			show_info_all(widget, "t");
+		}
+
+		gtk_widget_destroy(dialog);
+	}
+	else if (clothInfoChangeType == 2) {
+
+	}
+	else if (clothInfoChangeType) {
+
+	}
 }
 
 
@@ -986,12 +1092,7 @@ int main(int argc, char * argv[]) {
 
 
 
-
-
-
-
 	/*gtk widget declare*/
-	GtkWidget *window;
 	GtkBuilder *builder;
 	GtkTreeIter  iter;
 	GtkTreeSelection * select;
@@ -1010,7 +1111,7 @@ int main(int argc, char * argv[]) {
 	GtkWidget * menushowbaseall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem11"));
 	GtkWidget * menushowsellall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem12"));
 	GtkWidget * menudelete = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem6"));
-
+	GtkWidget * menuchange = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem7"));
 	
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size(GTK_WINDOW(window), 500, 280);
@@ -1026,7 +1127,7 @@ int main(int argc, char * argv[]) {
 	g_signal_connect(G_OBJECT(menushowbaseall), "activate", G_CALLBACK(show_info_all), "b");
  	g_signal_connect(G_OBJECT(menushowsellall), "activate", G_CALLBACK(show_info_all), "s");
  	g_signal_connect(G_OBJECT(menudelete), "activate", G_CALLBACK(cloth_info_delete), select);
-
+ 	g_signal_connect(G_OBJECT(menuchange), "activate", G_CALLBACK(cloth_info_change), select);
 
 	g_object_unref(G_OBJECT(builder));
 
