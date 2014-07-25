@@ -56,7 +56,8 @@ typedef struct cloth_type {
 
 //首先是用来标记需要改变信息类型 其中 1表示更改服饰类型信息 2表示修改衣服基本信息 3表示修改衣服销售基本信息 0表示不能进行修改操作
 int clothInfoChangeType = 0;
-
+CLO_TYPE * mainchain;
+GtkTreeView * treeview;
 /***************系统的主要功能***************/
 
 //辅助函数1 json 解析
@@ -119,37 +120,37 @@ char * CTOS(char ch) {
 	return a;
 }
 //辅助函数3 输出全部的内容
-// void outPutSome(CLO_TYPE * chain, char type) {
+void outPutSome(char type) {
 
-// 	CLO_TYPE * tmp = chain;
-// 	CLO_BASE * tmp_base;
-// 	CLO_SELL * tmp_sell;
+	CLO_TYPE * tmp = mainchain;
+	CLO_BASE * tmp_base;
+	CLO_SELL * tmp_sell;
 
-// 	while (tmp != NULL) {
-// 		if (tmp->type_num == type) {
-// 			break;
-// 		}
-// 		else {
-// 			tmp = tmp->type_next;
-// 		}
-// 	}
-// 	printf("%c\t%s\n\n", tmp->type_num, tmp->type_name);
-// 	tmp_base = tmp->base_info;
+	while (tmp != NULL) {
+		if (tmp->type_num == type) {
+			break;
+		}
+		else {
+			tmp = tmp->type_next;
+		}
+	}
+	printf("%c\t%s\n\n", tmp->type_num, tmp->type_name);
+	tmp_base = tmp->base_info;
 
-// 	while (tmp_base != NULL) {
-// 		printf("\t%c\n\t%s\n\t%c\n\t%f\n\t%d\n\t%f\n", tmp_base->cloth_type, tmp_base->cloth_name, tmp_base->cloth_sex, tmp_base->cloth_price, tmp_base->cloth_sold_num, tmp_base->cloth_comment);
+	while (tmp_base != NULL) {
+		printf("\t%c\n\t%s\n\t%c\n\t%f\n\t%d\n\t%f\n", tmp_base->cloth_type, tmp_base->cloth_name, tmp_base->cloth_sex, tmp_base->cloth_price, tmp_base->cloth_sold_num, tmp_base->cloth_comment);
 
-// 		tmp_sell = tmp_base->sell_info;
+		tmp_sell = tmp_base->sell_info;
 
-// 		while(tmp_sell != NULL) {
-// 			printf("\t\t%s\n\t\t%s\n\t\t%s\n\t\t%d\n", tmp_sell->cloth_name, tmp_sell->sold_time, tmp_sell->consumer_name, tmp_sell->consumer_comment);
+		while(tmp_sell != NULL) {
+			printf("\t\t%s\n\t\t%s\n\t\t%s\n\t\t%d\n", tmp_sell->cloth_name, tmp_sell->sold_time, tmp_sell->consumer_name, tmp_sell->consumer_comment);
 
-// 			tmp_sell = tmp_sell->sell_next;
-// 		}
+			tmp_sell = tmp_sell->sell_next;
+		}
 
-// 		tmp_base = tmp_base->base_next;
-// 	}
-// }
+		tmp_base = tmp_base->base_next;
+	}
+}
 
 
 //"链表的初始化 是需要从文件中读取数据的 因为写过网页所以我打算使用json格式的数据格式"
@@ -354,8 +355,9 @@ CLO_TYPE * cloth_type_serach(CLO_TYPE * chain, char pattern, char * content) {
 }
 
 //服装类型  删除功能
-CLO_TYPE * cloth_type_info_delete(CLO_TYPE * chain, char * str) {
+void cloth_type_info_delete(char * str) {
 
+	CLO_TYPE * chain = mainchain;
 	CLO_TYPE * tmpChain;
 
 	if (strlen(str) == 1) {
@@ -380,7 +382,7 @@ CLO_TYPE * cloth_type_info_delete(CLO_TYPE * chain, char * str) {
 		}
 	}
 
-	return chain;
+	mainchain = chain;
 }
 //服装分类数据更改 pattern 表示更改的数据类型 n表示标号 m表示名字 content, 这里的node是由上面的search函数获得的
 void cloth_type_info_change(CLO_TYPE * node, CLO_TYPE * mainchain,char pattern, char * content) {
@@ -438,8 +440,8 @@ void cloth_base_info_check(CLO_BASE * tmp) {
 }
 
 //搜索目标和前面一样  content为搜索衣服的名字
-CLO_BASE * cloth_base_search(CLO_TYPE * chain, char type, char * clothname) {
-	CLO_TYPE * tmp = chain;
+CLO_BASE * cloth_base_search(char type, char * clothname) {
+	CLO_TYPE * tmp = mainchain;
 	CLO_BASE * tmpbase;
 	CLO_BASE * prevbase;
 	int i;
@@ -472,9 +474,9 @@ CLO_BASE * cloth_base_search(CLO_TYPE * chain, char type, char * clothname) {
 	return prevbase;
 }
 //数据删除
-void cloth_base_info_delete(CLO_TYPE * chain, char type, char * clothname) {
-	CLO_TYPE * tmpChain = chain;
-	CLO_BASE * tmpNode = cloth_base_search(chain, type, clothname);
+void cloth_base_info_delete(char type, char * clothname) {
+	CLO_TYPE * tmpChain = mainchain;
+	CLO_BASE * tmpNode = cloth_base_search(type, clothname);
 
 	// printf("%d", tmpNode == NULL);
 
@@ -541,7 +543,7 @@ void cloth_base_info_change(CLO_BASE * node, CLO_TYPE * chain,char prevtype, cha
 
 		tmpbase->base_next = changeNode;
 
-		cloth_base_info_delete(chain, prevtype, changeNode->cloth_name);
+		cloth_base_info_delete(prevtype, changeNode->cloth_name);
 
 		tmpbase->base_next->base_next = NULL;
 		changeNode->cloth_type = nowtype;
@@ -598,13 +600,17 @@ void cloth_sell_info_check(CLO_BASE * tmpbase) {
 
 		tmpsell = tmpsell->sell_next;
 	}
-
-	tmpbase->cloth_comment = (float)tmpbase->cloth_comment/(float)tmpbase->cloth_sold_num;
+	if (tmpbase->cloth_sold_num != 0) {
+		tmpbase->cloth_comment = (float)tmpbase->cloth_comment/(float)tmpbase->cloth_sold_num;
+	}
+	else {
+		tmpbase->cloth_comment = 0;
+	}
 }
 
 //辅助查找
-CLO_BASE * cloth_sell_search(CLO_TYPE * chain, char * clothname) {
-	CLO_TYPE * tmp = chain;
+CLO_BASE * cloth_sell_search(char * clothname) {
+	CLO_TYPE * tmp = mainchain;
 	CLO_BASE * tmpbase;
 
 	while(tmp != NULL) {
@@ -624,8 +630,8 @@ CLO_BASE * cloth_sell_search(CLO_TYPE * chain, char * clothname) {
 	}
 }
 //数据的删除 这里因为购买数据可能重复，所以删除的话需要很多数据
-void cloth_sell_info_delete(CLO_TYPE * chain, char * clothname, char * soldtime, char * consumername, int consumercomment) {
-	CLO_BASE * tmpbase = cloth_sell_search(chain, clothname);
+void cloth_sell_info_delete(char * clothname, char * soldtime, char * consumername, int consumercomment) {
+	CLO_BASE * tmpbase = cloth_sell_search(clothname);
 	CLO_SELL * nownode, * prevnode;
 
 	nownode = tmpbase->sell_info;
@@ -654,7 +660,7 @@ void cloth_sell_info_delete(CLO_TYPE * chain, char * clothname, char * soldtime,
 void cloth_sell_info_change(CLO_TYPE * chain, char * name, char * prevtime, char * nowtime, char * prevcname, char * nowcname, int prevcom, int nowcom) {
 
 	CLO_TYPE * tmp = chain;
-	CLO_BASE * tmpbase = cloth_sell_search(tmp, name);
+	CLO_BASE * tmpbase = cloth_sell_search(name);
 	CLO_SELL * tmpsell = tmpbase->sell_info;
 
 	while (tmpsell != NULL) {
@@ -672,7 +678,7 @@ void cloth_sell_info_change(CLO_TYPE * chain, char * name, char * prevtime, char
 }
 //销售信息的录入
 void cloth_sell_info_input(CLO_TYPE * chain, char * clothname, char * soldtime, char *cname, int ccomment) {
-	CLO_BASE * tmpbase = cloth_sell_search(chain, clothname);
+	CLO_BASE * tmpbase = cloth_sell_search(clothname);
 	CLO_SELL * tmpsell = tmpbase->sell_info;
 
 	while (tmpsell->sell_next != NULL) {
@@ -693,7 +699,7 @@ void cloth_sell_info_input(CLO_TYPE * chain, char * clothname, char * soldtime, 
 /*********下面是gtk liststore的变换**********/
 
 //这里的pattern t表示类型信息 b表示服装基本信息 s表示销售基本信息
-void treeview_change (GtkTreeView * treeview, char pattern) {
+void treeview_change (char pattern) {
 	GtkListStore * list;
 	GtkTreeViewColumn * column;
 	GtkCellRenderer * cellrenderer = gtk_cell_renderer_text_new();
@@ -763,14 +769,14 @@ GtkListStore * liststore_change(char  pattern) {
 	}
 }
 	//下来是要处理显示数据的函数了 fresh表示是否刷新liststore, >0 刷新 , <0不
-void show_type_info(GtkTreeView * treeview, CLO_TYPE * chain, int fresh) {
+void show_type_info(CLO_TYPE * chain, int fresh) {
 
 	CLO_TYPE * tmp = chain;
 	GtkListStore * list;
 	if (fresh>0) {
 		list = liststore_change('t');
 		gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
-		treeview_change(treeview, 't');
+		treeview_change('t');
 		clothInfoChangeType = 1;
 	}
 	else {
@@ -790,13 +796,13 @@ void show_type_info(GtkTreeView * treeview, CLO_TYPE * chain, int fresh) {
 		tmp = tmp->type_next;
 	}
 }
-void show_base_info(GtkTreeView * treeview, CLO_BASE * chain, int fresh) {
+void show_base_info(CLO_BASE * chain, int fresh) {
 
 	CLO_BASE * tmp = chain;
 	GtkListStore * list;
 	if (fresh > 0) {
 		list = liststore_change('b');
-		treeview_change(treeview, 'b');
+		treeview_change('b');
 		gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
 		clothInfoChangeType = 2;
 	}
@@ -814,7 +820,7 @@ void show_base_info(GtkTreeView * treeview, CLO_BASE * chain, int fresh) {
 		tmp = tmp->base_next;
 	}
 }
-void show_sell_info(GtkTreeView * treeview, CLO_SELL * chain, int fresh) {
+void show_sell_info(CLO_SELL * chain, int fresh) {
 
 	CLO_SELL * tmp = chain;
 	GtkListStore * list;
@@ -822,7 +828,7 @@ void show_sell_info(GtkTreeView * treeview, CLO_SELL * chain, int fresh) {
 
 	if (fresh > 0) {
 		list = liststore_change('s');
-		treeview_change(treeview, 's');
+		treeview_change('s');
 		gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
 		clothInfoChangeType = 3;
 	}
@@ -844,47 +850,53 @@ void show_sell_info(GtkTreeView * treeview, CLO_SELL * chain, int fresh) {
 //GtkTreeView * treeview, CLO_TYPE * chain, char pattern
 /*下来是显示所有的信息*/
    /*先是用于使用gtk_signal_connect的结构*/
-typedef struct showAllInfo {
-	GtkTreeView * treeview;
-	CLO_TYPE * chain;
-	char pattern;
-} SHOW_ALL_INFO;
-void show_info_all(GtkWidget * widget, SHOW_ALL_INFO * data) {
-	CLO_TYPE * tmptype = data->chain;
+void show_info_all(GtkWidget * widget, char * pattern) {
+	CLO_TYPE * tmptype = mainchain;
 	CLO_BASE * tmpbase;
-	GtkTreeView * treeview = data->treeview;
-
-	char pattern = data->pattern;
 
 	int flag = 1;
-	if (pattern == 't') {
-		show_type_info(treeview, tmptype, 1);
+	if (pattern[0] == 't') {
+		show_type_info(tmptype, 1);
 	}
-	else if (pattern == 'b') {
+	else if (pattern[0] == 'b') {
 		if (tmptype != NULL) {
-			show_base_info(treeview, tmptype->base_info, 1);
+			show_base_info(tmptype->base_info, 1);
 			tmptype = tmptype->type_next;
+		}
+		else {
+			show_base_info(NULL, 1);
+			return;
 		}
 
 		while (tmptype != NULL) {
-			show_base_info(treeview, tmptype->base_info, -1);
+			show_base_info(tmptype->base_info, -1);
 			tmptype = tmptype->type_next;
 		}
 	}
-	else if (pattern == 's') {
+	else if (pattern[0] == 's') {
+
+		if (tmptype == NULL) {
+			show_sell_info(NULL, 1);
+			return;
+		}
+
 		while (tmptype != NULL) {
 			tmpbase = tmptype->base_info;
 
 			if (flag) {
 				if (tmpbase != NULL) {
-					show_sell_info(treeview, tmpbase->sell_info, 1);
+					show_sell_info(tmpbase->sell_info, 1);
 					tmpbase = tmpbase->base_next;
+				}
+				else {
+					show_sell_info(NULL, 1);
+					return;
 				}
 				flag = 0;
 			}
 
 			while (tmpbase != NULL) {
-				show_sell_info(treeview, tmpbase->sell_info, -1);
+				show_sell_info(tmpbase->sell_info, -1);
 				tmpbase = tmpbase->base_next;
 			}
 			tmptype = tmptype->type_next;
@@ -893,9 +905,58 @@ void show_info_all(GtkWidget * widget, SHOW_ALL_INFO * data) {
 	}
 }
 //首先是信息的删除功能
+void cloth_info_delete(GtkWidget * widget, GtkTreeSelection * selection) {
 
+	GtkTreeIter iter;
+	GtkTreeModel * model;
 
+	CLO_TYPE * tmp = mainchain;
 
+	if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		return;
+	}
+
+	if (clothInfoChangeType == 0) {
+		return;
+	}
+	else if (clothInfoChangeType == 1) {
+		char * typeNum, * typeName;
+		gtk_tree_model_get(model, &iter, 0, &typeNum, 1, &typeName, -1);
+
+		cloth_type_info_delete(typeName);
+
+		free(typeNum);
+		free(typeName);
+		show_info_all(widget, "t");
+	}
+	else if (clothInfoChangeType == 2) {
+		char * clothName, * clothType;
+		gtk_tree_model_get(model, &iter, 0, &clothType, 1, &clothName, -1);
+
+		cloth_base_info_delete(clothType[0], clothName);
+
+		free(clothName);
+		free(clothType);
+		show_info_all(widget, "b");
+	}
+	else if (clothInfoChangeType == 3) {
+		char * clothName, * clothSoldTime, * clothCName;
+		int clothCComment;
+		gtk_tree_model_get(model, &iter, 0, &clothName, 1, &clothSoldTime, 2, &clothCName, 3, &clothCComment, -1);
+
+		cloth_sell_info_delete(clothName, clothSoldTime, clothCName, clothCComment);
+
+		free(clothName);
+		free(clothSoldTime);
+		free(clothCName);
+
+		show_info_all(widget, "s");
+	}
+}
+//再者是信息的更改功能
+void cloth_info_change(GtkWidget * widget, ) {
+
+}
 
 
 
@@ -904,13 +965,8 @@ void show_info_all(GtkWidget * widget, SHOW_ALL_INFO * data) {
 
 
 int main(int argc, char * argv[]) {
-	CLO_TYPE * mainchain = chain_init("db.json"); //JSON文件的编写格式见db.json
+	mainchain = chain_init("db.json"); //JSON文件的编写格式见db.json
 	CLO_TYPE * tempchain = mainchain;
-
-
-
-
-
 
 
 
@@ -937,43 +993,39 @@ int main(int argc, char * argv[]) {
 	/*gtk widget declare*/
 	GtkWidget *window;
 	GtkBuilder *builder;
-	GtkTreeView * treeview;
 	GtkTreeIter  iter;
-
+	GtkTreeSelection * select;
 	/*gkt init*/
 	gtk_init(&argc, &argv);
+
 	/*gtk get widget from builder*/
 	builder = gtk_builder_new_from_file("interface.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
 	treeview = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview"));
-
+ 	select = gtk_tree_view_get_selection(treeview);
+ 	gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
 	//For menu
 	GtkWidget * menuquit = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem5"));
 	GtkWidget * menushowtypeall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem4"));
 	GtkWidget * menushowbaseall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem11"));
 	GtkWidget * menushowsellall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem12"));
+	GtkWidget * menudelete = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem6"));
 
+	
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size(GTK_WINDOW(window), 500, 280);
 
 
-
-	SHOW_ALL_INFO * showtypeall = (SHOW_ALL_INFO *)malloc(sizeof(SHOW_ALL_INFO));
-	SHOW_ALL_INFO * showbaseall = (SHOW_ALL_INFO *)malloc(sizeof(SHOW_ALL_INFO));
-	SHOW_ALL_INFO * showsellall = (SHOW_ALL_INFO *)malloc(sizeof(SHOW_ALL_INFO));
-	showsellall->treeview = showbaseall->treeview = showtypeall->treeview = treeview;
-	showsellall->chain = showbaseall->chain = showtypeall->chain = mainchain;
-	showtypeall->pattern = 't';
-	showbaseall->pattern = 'b';
-	showsellall->pattern = 's';
+	
 
 
 	/*connect signal*/
 	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(G_OBJECT(menuquit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(G_OBJECT(menushowtypeall), "activate", G_CALLBACK(show_info_all), showtypeall);
-	g_signal_connect(G_OBJECT(menushowbaseall), "activate", G_CALLBACK(show_info_all), showbaseall);
-	g_signal_connect(G_OBJECT(menushowsellall), "activate", G_CALLBACK(show_info_all), showsellall);
+	g_signal_connect(G_OBJECT(menushowtypeall), "activate", G_CALLBACK(show_info_all), "t");
+	g_signal_connect(G_OBJECT(menushowbaseall), "activate", G_CALLBACK(show_info_all), "b");
+ 	g_signal_connect(G_OBJECT(menushowsellall), "activate", G_CALLBACK(show_info_all), "s");
+ 	g_signal_connect(G_OBJECT(menudelete), "activate", G_CALLBACK(cloth_info_delete), select);
 
 
 	g_object_unref(G_OBJECT(builder));
