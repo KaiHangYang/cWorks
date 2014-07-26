@@ -113,6 +113,7 @@ char * ITOA(int a) {
 
 	return str;
 }
+//把字符转化为字符串
 char * CTOS(char ch) {
 	char * a;
 	a = (char *)malloc(sizeof(char)*2);
@@ -120,7 +121,36 @@ char * CTOS(char ch) {
 	a[1] = '\0';
 	return a;
 }
-//辅助函数3 输出全部的内容
+//把数字浮点数字符串转化为浮点数
+float STOF(char * str) {
+	float tmp = 0;
+	int len = strlen(str);
+	int i, j, k;
+
+	if(len == 0 || str[0] == '\0') {
+		return 0;
+	}
+
+	for (i=0; i < len-1; i++) {
+		if (str[i] == '.') {
+			break;
+		}
+	}
+	if (i == len-1) {
+		i += 1;
+	}
+	for (j=0, k=0; k < len; j++, k++) {
+		if (str[k] == '.') {
+			j--;
+			continue;
+		}
+		else {
+			tmp += (str[k] - '0')*pow(10, i - 1 - j);
+		}
+	}
+	return tmp;
+}
+//辅助函数3 输出全部的内容 (在还没做图形界面的时候测试用的)
 void outPutSome(char type) {
 
 	CLO_TYPE * tmp = mainchain;
@@ -531,7 +561,7 @@ void cloth_base_info_delete(char type, char * clothname) {
 }
 //数据更改
 void cloth_base_info_change(CLO_BASE * node, char prevtype, char nowtype, char * clothname, char clothsex, float clothprice) {
-	CLO_BASE * changeNode, * tmpbase;
+	CLO_BASE * changeNode, * tmpbase=NULL;
 	CLO_TYPE * tmp = mainchain;
 
 	if(node == NULL) {
@@ -568,26 +598,32 @@ void cloth_base_info_change(CLO_BASE * node, char prevtype, char nowtype, char *
 			}
 		}
 
-		while(tmpbase->base_next != NULL) {
-			tmpbase = tmpbase->base_next;
+		if (tmpbase != NULL) {
+			while(tmpbase->base_next != NULL) {
+				tmpbase = tmpbase->base_next;
+			}
+			tmpbase->base_next = changeNode;
+
+			cloth_base_info_delete(prevtype, changeNode->cloth_name);
+
+			tmpbase->base_next->base_next = NULL;
+			changeNode->cloth_type = nowtype;
+			strcpy(changeNode->cloth_name, clothname);
+			changeNode->cloth_sex = clothsex;
+			changeNode->cloth_price = clothprice;
 		}
-
-		tmpbase->base_next = changeNode;
-
-		cloth_base_info_delete(prevtype, changeNode->cloth_name);
-
-		tmpbase->base_next->base_next = NULL;
-		changeNode->cloth_type = nowtype;
-		strcpy(changeNode->cloth_name, clothname);
-		changeNode->cloth_sex = clothsex;
-		changeNode->cloth_price = clothprice;
+		else {
+			strcpy(changeNode->cloth_name, clothname);
+			changeNode->cloth_sex = clothsex;
+			changeNode->cloth_price = clothprice;
+		}
 	}
 
 	cloth_base_info_check(changeNode);
 }
 //数据录入
-void cloth_base_info_input(CLO_TYPE * chain, char type, char * clothname, char clothsex, float clothprice) {
-	CLO_TYPE * tmp = chain;
+void cloth_base_info_input(char type, char * clothname, char clothsex, float clothprice) {
+	CLO_TYPE * tmp = mainchain;
 	CLO_BASE * tmpbase;
 
 	while (tmp != NULL) {
@@ -659,6 +695,8 @@ CLO_BASE * cloth_sell_search(char * clothname) {
 
 		tmp = tmp->type_next;
 	}
+
+	return NULL;
 }
 //数据的删除 这里因为购买数据可能重复，所以删除的话需要很多数据
 void cloth_sell_info_delete(char * clothname, char * soldtime, char * consumername, int consumercomment) {
@@ -688,28 +726,30 @@ void cloth_sell_info_delete(char * clothname, char * soldtime, char * consumerna
 	cloth_sell_info_check(tmpbase);
 }
 //信息更改 按照逻辑来说是不能改名字的 除了原来的衣服更改名字
-void cloth_sell_info_change(CLO_TYPE * chain, char * name, char * prevtime, char * nowtime, char * prevcname, char * nowcname, int prevcom, int nowcom) {
+void cloth_sell_info_change(char * name, char * prevtime, char * nowtime, char * prevcname, char * nowcname, int prevcom, int nowcom) {
 
-	CLO_TYPE * tmp = chain;
+	CLO_TYPE * tmp = mainchain;
 	CLO_BASE * tmpbase = cloth_sell_search(name);
 	CLO_SELL * tmpsell = tmpbase->sell_info;
 
 	while (tmpsell != NULL) {
-		if (strcmp(tmpsell->cloth_name, name) == 0 && strcmp(tmpsell->sold_time, prevtime) == 0 && strcmp(tmpsell->consumer_name, prevcname) == 0 && tmpsell->consumer_comment == prevcom) {
+		if (strcmp(tmpsell->sold_time, prevtime) == 0 && strcmp(tmpsell->consumer_name, prevcname) == 0 && tmpsell->consumer_comment == prevcom) {
 			strcpy(tmpsell->sold_time, nowtime);
 			strcpy(tmpsell->consumer_name, nowcname);
 			tmpsell->consumer_comment = nowcom;
 		}
-		else {
-			tmpsell = tmpsell->sell_next;
-		}
+		tmpsell = tmpsell->sell_next;
 	}
 
 	cloth_sell_info_check(tmpbase);
 }
 //销售信息的录入
-void cloth_sell_info_input(CLO_TYPE * chain, char * clothname, char * soldtime, char *cname, int ccomment) {
+void cloth_sell_info_input(char * clothname, char * soldtime, char *cname, int ccomment) {
 	CLO_BASE * tmpbase = cloth_sell_search(clothname);
+	if (tmpbase == NULL) {
+		return;
+	}
+
 	CLO_SELL * tmpsell = tmpbase->sell_info;
 
 	while (tmpsell->sell_next != NULL) {
@@ -995,6 +1035,7 @@ void cloth_info_change(GtkWidget * widget, GtkTreeSelection * selection) {
 	GtkWidget * label1, * label2, * label3, * label4;
 	GtkTreeIter iter;
 	GtkTreeModel * model;
+	GtkEntryBuffer * buffer;
 
 	if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
 		return;
@@ -1006,7 +1047,6 @@ void cloth_info_change(GtkWidget * widget, GtkTreeSelection * selection) {
 	else if (clothInfoChangeType == 1) {
 		char * typeNum, * typeName;
 		char * tmpnum, * tmpname;
-		GtkEntryBuffer * buffer;
 
 		tmpnum = (char *)malloc(2);
 		tmpname = (char *)malloc(21);
@@ -1057,14 +1097,276 @@ void cloth_info_change(GtkWidget * widget, GtkTreeSelection * selection) {
 		gtk_widget_destroy(dialog);
 	}
 	else if (clothInfoChangeType == 2) {
+		char * clothname, * clothsex, * clothtype;
+		char *tmpname, * tmpsex, * tmptype, * tmpstr;
+		float  clothprice, tmpprice;
 
+		tmpname = (char *)malloc(31);
+		tmpsex = (char *)malloc(2);
+		tmptype = (char *)malloc(2);
+		tmpstr = (char *)malloc(21);
+
+		gtk_tree_model_get(model, &iter, 0, &clothtype, 1, &clothname, 2, &clothsex, 3, &clothprice, -1);
+
+		label1 = gtk_label_new("分类编码");
+		label2 = gtk_label_new("服饰名称");
+		label3 = gtk_label_new("服饰样式");
+		label4 = gtk_label_new("服饰单价");
+		entry1 = gtk_entry_new();
+		entry2 = gtk_entry_new();
+		entry3 = gtk_entry_new();
+		entry4 = gtk_entry_new();
+
+		gtk_grid_set_row_spacing (GTK_GRID (box), 5);
+		gtk_grid_attach(GTK_GRID(box), label1, 0, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label2, 0, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label3, 0, 2, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label4, 0, 3, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry1, 1, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry2, 1, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry3, 1, 2, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry4, 1, 3, 1, 1);
+
+		dialog = gtk_dialog_new_with_buttons("更改服饰基本信息", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+
+		GtkWidget * content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+		gtk_container_add(GTK_CONTAINER(content), box);
+
+		CLO_BASE * node = cloth_base_search(clothtype[0], clothname);
+
+		gtk_widget_show_all(dialog);
+
+		int response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+		if (response == GTK_RESPONSE_ACCEPT) {
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry1));
+			strcpy(tmptype, gtk_entry_buffer_get_text(buffer));
+			tmptype[1] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry2));
+			strcpy(tmpname, gtk_entry_buffer_get_text(buffer));
+			tmpname[30] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry3));
+			strcpy(tmpsex, gtk_entry_buffer_get_text(buffer));
+			tmpsex[1] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry4));
+			strcpy(tmpstr, gtk_entry_buffer_get_text(buffer));
+			tmpprice = STOF(tmpstr);
+
+
+			if (!(tmptype[0] >= '1' && tmptype[0] <= '9')) {
+				tmptype[0] = clothtype[0];
+			}
+
+			if (tmpname[0] == '\0') {
+				strcpy(tmpname, clothname);
+			}
+			if ((tmpsex[0] != '0' && tmpsex[0] != '1' && tmpsex[0] != '9')||tmpsex[0] == '\0') {
+				tmpsex[0] = clothsex[0];
+			}
+
+			if (!(tmpprice > 0)) {
+				tmpprice = clothprice;
+			}
+
+			cloth_base_info_change(node, clothtype[0], tmptype[0], tmpname, tmpsex[0], tmpprice);
+
+			show_info_all(widget, "b");
+
+			free(clothname);
+			free(clothsex);
+			free(clothtype);
+			free(tmpname);
+			free(tmpsex);
+			free(tmptype);
+			free(tmpstr);
+		}
+
+		gtk_widget_destroy(dialog);
 	}
-	else if (clothInfoChangeType) {
+	else if (clothInfoChangeType == 3) {
+		char * clothname, * soldtime, * cname;
+		char * tmptime, * tmpcname, *tmpstr;
+		int ccom, tmpccom;
 
+		tmptime = (char *)malloc(11);
+		tmpcname = (char *)malloc(21);
+		tmpstr = (char *)malloc(21);
+
+		gtk_tree_model_get(model, &iter, 0, &clothname, 1, &soldtime, 2, &cname, 3, &ccom, -1);
+
+		entry1 = gtk_entry_new();
+		entry2 = gtk_entry_new();
+		entry3 = gtk_entry_new();
+		label1 = gtk_label_new("销售日期 ");
+		label2 = gtk_label_new("客户名称 ");
+		label3 = gtk_label_new("客户评价 ");
+
+		gtk_grid_set_row_spacing(GTK_GRID(box), 5);
+		gtk_grid_attach(GTK_GRID(box), label1, 0, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label2, 0, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label3, 0, 2, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry1, 1, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry2, 1, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry3, 1, 2, 1, 1);
+
+		dialog = gtk_dialog_new_with_buttons("更改销售基本信息", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+
+		GtkWidget * content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+		gtk_container_add(GTK_CONTAINER(content), box);
+
+		gtk_widget_show_all(dialog);
+
+		int response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+		if (response == GTK_RESPONSE_ACCEPT) {
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry1));
+			strcpy(tmptime, gtk_entry_buffer_get_text(buffer));
+			tmptime[10] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry2));
+			strcpy(tmpcname, gtk_entry_buffer_get_text(buffer));
+			tmpcname[20] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry3));
+			strcpy(tmpstr, gtk_entry_buffer_get_text(buffer));
+			tmpccom = tmpstr[0] - '0';
+
+			if (tmptime[0] == '\0') {
+				strcpy(tmptime, soldtime);
+			}
+
+			if (tmpcname[0] == '\0') {
+				strcpy(tmpcname, cname);
+			}
+
+			if (!(tmpccom>=1&&tmpccom<=5)) {
+				tmpccom = ccom;
+			}
+
+			//g_print("%s\n%s\n%s\n%d\n", clothname,tmptime, tmpcname, tmpccom);
+			cloth_sell_info_change(clothname, soldtime, tmptime, cname, tmpcname, ccom, tmpccom);
+
+			show_info_all(widget, "s");
+
+			free(clothname);
+			free(soldtime);
+			free(cname);
+			free(tmptime);
+			free(tmpcname);
+			free(tmpstr);
+		}
+
+		gtk_widget_destroy(dialog);
 	}
 }
+//下来是信息的填充功能
+void cloth_info_input(GtkWidget * widget) {
 
+	GtkWidget * dialog;
+	GtkWidget * content;
+	GtkWidget *entry1, *entry2, *entry3, *entry4;
+	GtkWidget *label1, *label2, *label3, *label4;
+	GtkWidget *box = gtk_grid_new();
+	GtkEntryBuffer *buffer;
+	int response;
 
+	if (clothInfoChangeType == 0) {
+		return;
+	}
+	else if (clothInfoChangeType == 1) {
+
+	}
+	else if (clothInfoChangeType == 2) {
+		char * clothtype, * clothname, * clothsex, * str;
+		float clothprice;
+
+		clothtype = (char *)malloc(11);
+		clothname = (char *)malloc(31);
+		clothsex = (char *)malloc(11);
+		str = (char *)malloc(21);
+
+		dialog = gtk_dialog_new_with_buttons("添加服饰基本信息", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+
+		content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+		entry1 = gtk_entry_new();
+		entry2 = gtk_entry_new();
+		entry3 = gtk_entry_new();
+		entry4 = gtk_entry_new();
+		label1 = gtk_label_new("分类编码");
+		label2 = gtk_label_new("服饰名称");
+		label3 = gtk_label_new("样式");
+		label4 = gtk_label_new("单价");
+	}
+	else if (clothInfoChangeType == 3) {
+		char * clothname, * soldtime, * cname, * str;
+		int ccom;
+
+		clothname = (char *)malloc(31);
+		soldtime = (char *)malloc(11);
+		cname = (char *)malloc(21);
+		str = (char *)malloc(21);
+
+		dialog  = gtk_dialog_new_with_buttons("添加销售信息", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+
+		content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+		entry1 = gtk_entry_new();
+		entry2 = gtk_entry_new();
+		entry3 = gtk_entry_new();
+		entry4 = gtk_entry_new();
+		label1 = gtk_label_new("服饰名称");
+		label2 = gtk_label_new("销售日期");
+		label3 = gtk_label_new("客户名称");
+		label4 = gtk_label_new("客户评价");
+
+		gtk_grid_set_row_spacing(GTK_GRID(box), 5);
+		gtk_grid_attach(GTK_GRID(box), label1, 0, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label2, 0, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label3, 0, 2, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), label4, 0, 3, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry1, 1, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry2, 1, 1, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry3, 1, 2, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry4, 1, 3, 1, 1);
+
+		gtk_container_add(GTK_CONTAINER(content), box);
+
+		gtk_widget_show_all(dialog);
+
+		response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+		if (response == GTK_RESPONSE_ACCEPT) {
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry1));
+			strcpy(clothname, gtk_entry_buffer_get_text(buffer));
+			clothname[30] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry2));
+			strcpy(soldtime, gtk_entry_buffer_get_text(buffer));
+			soldtime[10] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry3));
+			strcpy(cname, gtk_entry_buffer_get_text(buffer));
+			cname[20] = '\0';
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry4));
+			strcpy(str, gtk_entry_buffer_get_text(buffer));
+			ccom = str[0] - '0';
+
+			if(clothname[0] == '\0' || soldtime[0] == '\0' || cname[0] == '\0' || !(ccom >= 1 && ccom <= 5)) {
+			}
+			else {
+				cloth_sell_info_input(clothname, soldtime, cname, ccom);
+			}
+
+			free(clothname);
+			free(soldtime);
+			free(cname);
+			free(str);
+
+			show_info_all(widget, "s");
+		}
+
+		gtk_widget_destroy(dialog);
+	}
+}
 
 
 
@@ -1073,7 +1375,6 @@ void cloth_info_change(GtkWidget * widget, GtkTreeSelection * selection) {
 int main(int argc, char * argv[]) {
 	mainchain = chain_init("db.json"); //JSON文件的编写格式见db.json
 	CLO_TYPE * tempchain = mainchain;
-
 
 
 
@@ -1112,7 +1413,9 @@ int main(int argc, char * argv[]) {
 	GtkWidget * menushowsellall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem12"));
 	GtkWidget * menudelete = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem6"));
 	GtkWidget * menuchange = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem7"));
-	
+	GtkWidget * menuinput = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem8"));
+
+
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size(GTK_WINDOW(window), 500, 280);
 
@@ -1128,6 +1431,7 @@ int main(int argc, char * argv[]) {
  	g_signal_connect(G_OBJECT(menushowsellall), "activate", G_CALLBACK(show_info_all), "s");
  	g_signal_connect(G_OBJECT(menudelete), "activate", G_CALLBACK(cloth_info_delete), select);
  	g_signal_connect(G_OBJECT(menuchange), "activate", G_CALLBACK(cloth_info_change), select);
+ 	g_signal_connect(G_OBJECT(menuinput), "activate", G_CALLBACK(cloth_info_input), NULL);
 
 	g_object_unref(G_OBJECT(builder));
 
