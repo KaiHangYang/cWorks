@@ -856,6 +856,57 @@ void treeview_change (char pattern) {
 		column = gtk_tree_view_column_new_with_attributes("客户评价",cellrenderer, "text", 3, NULL);
 		gtk_tree_view_append_column(treeview, column);
 	}
+	else if (pattern == '1') {
+		column = gtk_tree_view_column_new_with_attributes("分类名称", cellrenderer, "text", 0, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("销售总件数", cellrenderer, "text", 1, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("销售总额", cellrenderer, "text", 2, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价>=3件数", cellrenderer, "text", 3, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价<3件数", cellrenderer, "text", 4, NULL);
+		gtk_tree_view_append_column(treeview, column);
+	}
+	else if (pattern == '2') {
+		column = gtk_tree_view_column_new_with_attributes("服饰名称", cellrenderer, "text", 0, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("分类名称", cellrenderer, "text", 1, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("售出件数", cellrenderer, "text", 2, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("销售金额", cellrenderer, "text", 3, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价指数", cellrenderer, "text", 4, NULL);
+		gtk_tree_view_append_column(treeview, column);
+	}
+	else if (pattern == '3') {
+		column = gtk_tree_view_column_new_with_attributes("客户名称", cellrenderer, "text", 0, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("所购服装总件数", cellrenderer, "text", 1, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("消费总金额", cellrenderer, "text", 2, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("总体评价度", cellrenderer, "text", 3, NULL);
+		gtk_tree_view_append_column(treeview, column);
+	}
+	else if (pattern == '4') {
+		column = gtk_tree_view_column_new_with_attributes("季节", cellrenderer, "text", 0, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("销售总件数", cellrenderer, "text", 1, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("销售总额", cellrenderer, "text", 2, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价>=3件数", cellrenderer, "text", 3, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价<3件数", cellrenderer, "text", 4, NULL);
+		gtk_tree_view_append_column(treeview, column);
+		column = gtk_tree_view_column_new_with_attributes("评价<3件数", cellrenderer, "text", 5, NULL);
+		gtk_tree_view_append_column(treeview, column);
+	}
+	else if (pattern == '5') {
+
+	}
 }
 
 //下来是 liststore 的数据的填充
@@ -867,8 +918,17 @@ GtkListStore * liststore_change(char  pattern) {
 	else if (pattern == 'b') {
 		return gtk_list_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_FLOAT, G_TYPE_INT, G_TYPE_FLOAT);
 	}
-	else {
+	else if (pattern == 's') {
 		return gtk_list_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+	}
+	else if (pattern == '1') {
+		return gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_INT, G_TYPE_FLOAT, G_TYPE_INT, G_TYPE_INT);
+	}
+	else if (pattern == '2') {
+		return gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_FLOAT, G_TYPE_FLOAT);
+	}
+	else if (pattern == '3') {
+		return gtk_list_store_new(4, G_TYPE_STRING, G_TYPE_INT, G_TYPE_FLOAT, G_TYPE_FLOAT);
 	}
 }
 	//下来是要处理显示数据的函数了 fresh表示是否刷新liststore, >0 刷新 , <0不
@@ -2004,6 +2064,337 @@ void cloth_info_search(GtkWidget * widget, char * data) {
 	}
 }
 //下来是开始数据统计
+//数据统计辅助数据结构
+typedef struct data1 {
+	char type_name[10];
+	int sold_total_num;
+	float total_income;
+	int comment_high_num;
+	int comment_low_num;
+
+	struct data1 * next;
+} DATA_COUNT1;
+
+typedef struct data2 {
+	char cloth_name[30];
+	char type_name[10];
+	int sold_num;
+	float total_income;
+	float total_comment;
+
+	struct data2 * next;
+} DATA_COUNT2;
+
+typedef struct data3 {
+	char cname[20];
+	int total_num;
+	float total_expense;
+	float total_comment;
+
+	struct data3 * next;
+} DATA_COUNT3;
+
+// typedef struct data4 {	
+
+// } DATA_COUNT4;
+
+// typedef struct data5 {
+
+// } DATA_COUNT5;
+
+//数据统计方面的函数
+void data_count (GtkWidget * widget, char * data) {
+	CLO_TYPE * tmptype = mainchain;
+	CLO_BASE * tmpbase;
+	CLO_SELL * tmpsell;
+	GtkListStore * list;
+	GtkTreeIter iter;
+	int i = 0, j, k;
+	int * tmparr;
+	int tmpint;
+	float tmpfloat;
+	int flag;
+
+	if (data[0] == '1') {
+		DATA_COUNT1 * tmpdata = NULL, * tmpdatahead = NULL;
+		float * pricearr;
+
+		while (tmptype != NULL) {
+			i++;
+			if (tmpdata == NULL) {
+				tmpdatahead = tmpdata = (DATA_COUNT1 *)malloc(sizeof(DATA_COUNT1));
+			}
+			else {
+				tmpdata->next = (DATA_COUNT1 *)malloc(sizeof(DATA_COUNT1));
+				tmpdata = tmpdata->next;
+			}
+			tmpdata->sold_total_num = 0;
+			tmpdata->total_income = 0;
+			tmpdata->comment_low_num = 0;
+			tmpdata->comment_high_num = 0;
+			tmpdata->next = NULL;
+
+			strcpy(tmpdata->type_name, tmptype->type_name);
+			tmpbase = tmptype->base_info;
+			while (tmpbase != NULL) {
+
+				tmpdata->sold_total_num += tmpbase->cloth_sold_num;
+				tmpdata->total_income += tmpbase->cloth_price * tmpbase->cloth_sold_num;
+
+				tmpsell = tmpbase->sell_info;
+
+				while (tmpsell != NULL) {
+					if (tmpsell->consumer_comment < 3) {
+						tmpdata->comment_low_num ++;
+					}
+					else {
+						tmpdata->comment_high_num++;
+					}
+
+					tmpsell = tmpsell->sell_next;
+				}
+
+				tmpbase = tmpbase->base_next;
+			}
+
+			tmptype = tmptype->type_next;
+		}
+
+		list = liststore_change('1');
+		treeview_change('1');
+
+		
+		if (tmpdata != NULL) {
+
+			tmpdata = tmpdatahead;
+			tmparr = (int *)malloc(sizeof(int) * i);
+			pricearr = (float *)malloc(sizeof(float) * i);
+			i = 0;
+
+			while (tmpdata != NULL) {
+				pricearr[i] = tmpdata->total_income;
+				tmparr[i] = i;
+
+				gtk_list_store_append(list, &iter);
+				gtk_list_store_set(list, &iter, 0, tmpdata->type_name, 1, tmpdata->sold_total_num, 2, tmpdata->total_income, 3, tmpdata->comment_high_num, 4, tmpdata->comment_low_num, -1);
+				tmpdata = tmpdata->next;
+				i++;
+			}
+
+			for (j = 0; j < i; j++) {
+	 			for (k = j; k < i; k++) {
+	 				if (pricearr[j] <= pricearr[k]) {
+	 					tmpfloat = pricearr[j];
+	 					pricearr[j] = pricearr[k];
+	 					pricearr[k] = tmpfloat;
+
+	 					tmpint = tmparr[j];
+	 					tmparr[j] = tmparr[k];
+	 					tmparr[k] = tmpint;
+	 				}
+	 			}
+			}
+		}
+		gtk_list_store_reorder(list, tmparr);
+		gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
+		clothInfoChangeType = 0;
+	}
+	else if (data[0] == '2') {
+		GtkWidget * dialog = gtk_dialog_new_with_buttons("请输入需要搜索的年份", GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, "_确定", GTK_RESPONSE_ACCEPT, "_取消", GTK_RESPONSE_REJECT, NULL);
+		GtkWidget * content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+		GtkWidget * label = gtk_label_new("搜寻年份:");
+		GtkWidget * entry = gtk_entry_new();
+		GtkWidget * box = gtk_grid_new();
+		GtkEntryBuffer * buffer;
+		DATA_COUNT2 * tmpdata = NULL, * tmpdatahead = NULL;
+		int response;
+		char * str = (char *)malloc(20);
+		char * tmpstr = (char *)malloc(5);
+		int * intarr;
+
+		gtk_grid_set_row_spacing(GTK_GRID(box), 5);
+		gtk_grid_attach(GTK_GRID(box), label, 0, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(box), entry, 1, 0, 1, 1);
+
+		gtk_container_add(GTK_CONTAINER(content), box);
+
+		gtk_widget_show_all(dialog);
+
+		response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+		if (response == GTK_RESPONSE_ACCEPT) {
+			buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
+			strcpy(str, gtk_entry_buffer_get_text(buffer));
+			str[4] = '\0';
+
+			if (strlen(str) == 4) {
+				while (tmptype != NULL) {
+
+					tmpbase = tmptype->base_info;
+
+					while (tmpbase != NULL) {
+						flag = 1;
+						tmpsell = tmpbase->sell_info;
+
+						while (tmpsell != NULL) {
+							strncpy(tmpstr, tmpsell->sold_time, 4);
+							tmpstr[4] = '\0';
+							if (strcmp(tmpstr, str) == 0) {
+								if (flag) {
+									i++;
+									if (tmpdata == NULL) {
+										tmpdatahead = tmpdata = (DATA_COUNT2 *)malloc(sizeof(DATA_COUNT2));
+									}
+									else {
+										tmpdata->next = (DATA_COUNT2 *)malloc(sizeof(DATA_COUNT2));
+										tmpdata = tmpdata->next;
+									}
+									flag = 0;
+									strcpy(tmpdata->cloth_name, tmpsell->cloth_name);
+									strcpy(tmpdata->type_name, tmptype->type_name);
+									tmpdata->total_comment = tmpbase->cloth_comment;
+									tmpdata->sold_num = 0;
+									tmpdata->total_income = 0;
+									tmpdata->next = NULL;
+								}
+
+								tmpdata->total_income += tmpbase->cloth_price;
+								tmpdata->sold_num ++;
+							}
+
+							tmpsell = tmpsell->sell_next;
+						}
+						tmpbase = tmpbase->base_next;
+					}
+					tmptype = tmptype->type_next;
+				}
+			}
+
+			list = liststore_change('2');
+			treeview_change('2');
+
+			tmparr = (int *)malloc(sizeof(int)*i);
+			intarr = (int *)malloc(sizeof(int)*i);
+
+			i=0;
+
+			if (tmpdata != NULL) {
+				tmpdata = tmpdatahead;
+
+				while (tmpdata != NULL) {
+
+					tmparr[i] = i;
+					intarr[i] = tmpdata->sold_num;
+
+					gtk_list_store_append(list, &iter);
+
+					gtk_list_store_set(list, &iter, 0, tmpdata->cloth_name, 1, tmpdata->type_name, 2, tmpdata->sold_num, 3, tmpdata->total_income, 4, tmpdata->total_comment, -1);
+					tmpdata = tmpdata->next;
+					i++;
+				}
+
+				for (j = 0; j < i; j++) {
+		 			for (k = j; k < i-1; k++) {
+		 				if (intarr[j] < intarr[k]) {
+		 					tmpint = intarr[j];
+		 					intarr[j] = intarr[k];
+		 					intarr[k] = tmpfloat;
+
+		 					tmpint = tmparr[j];
+		 					tmparr[j] = tmparr[k];
+		 					tmparr[k] = tmpint;
+		 				}
+		 			}
+				}
+			}
+			gtk_list_store_reorder(list, tmparr);
+			gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
+			clothInfoChangeType = 0;
+		}
+
+		gtk_widget_destroy(dialog);
+	}
+	else if (data[0] == '3') {
+		DATA_COUNT3 * tmpdata = NULL, * tmpdatahead = NULL, * tmpdataprev = NULL;
+
+		while (tmptype != NULL) {
+			tmpbase = tmptype->base_info;
+
+			while (tmpbase != NULL) {
+				tmpsell = tmpbase->sell_info;
+
+				while (tmpsell != NULL) {
+
+					if (tmpdata == NULL) {
+						tmpdatahead = tmpdata = (DATA_COUNT3 *)malloc(sizeof(DATA_COUNT3));
+						tmpdata->next = NULL;
+						strcpy(tmpdata->cname, tmpsell->consumer_name);
+						tmpdata->total_num = 1;
+						tmpdata->total_expense = tmpbase->cloth_price;
+						tmpdata->total_comment = tmpsell->consumer_comment;
+					}
+					else {
+						tmpdata = tmpdatahead;
+						while(tmpdata != NULL) {
+
+							if (strcmp(tmpdata->cname, tmpsell->consumer_name) == 0) {
+								tmpdata->total_expense += tmpbase->cloth_price;
+								tmpdata->total_comment = (tmpdata->total_comment*tmpdata->total_num + tmpsell->consumer_comment)/(float)(tmpdata->total_num+1);
+								tmpdata->total_num++;
+								break;
+							}
+							tmpdataprev = tmpdata;
+							tmpdata = tmpdata->next;
+						}
+
+						if (tmpdata == NULL) {
+							tmpdata = tmpdataprev;
+							tmpdata->next = (DATA_COUNT3 *)malloc(sizeof(DATA_COUNT3));
+							tmpdata = tmpdata->next;
+							tmpdata->next = NULL;
+							strcpy(tmpdata->cname, tmpsell->consumer_name);
+							tmpdata->total_num = 1;
+							tmpdata->total_expense = tmpbase->cloth_price;
+							tmpdata->total_comment = tmpsell->consumer_comment;
+						}
+					}
+
+					tmpsell = tmpsell->sell_next;
+				}
+
+				tmpbase = tmpbase->base_next;
+			}
+
+			tmptype = tmptype->type_next;
+		}
+
+		list = liststore_change('3');
+		treeview_change('3');
+
+		tmpdata = tmpdatahead;
+
+		if (tmpdata != NULL) {
+			while(tmpdata != NULL) {
+				gtk_list_store_append(list, &iter);
+				gtk_list_store_set(list, &iter, 0, tmpdata->cname, 1, tmpdata->total_num, 2, tmpdata->total_expense, 3, tmpdata->total_comment, -1);
+
+				tmpdata = tmpdata->next;
+			}
+		}
+
+		gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(list));
+
+		clothInfoChangeType = 0;
+	}
+	else if (data[0] == '4') {
+
+	}
+	else if (data[0] == '5') {
+
+	}
+}
+
+
 
 
 int main(int argc, char * argv[]) {
@@ -2053,6 +2444,9 @@ int main(int argc, char * argv[]) {
 	GtkWidget * menusearch1 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem9"));
 	GtkWidget * menusearch2 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem14"));
 	GtkWidget * menusearch3 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem15"));
+	GtkWidget * menudata1 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem19"));
+	GtkWidget * menudata2 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem20"));
+	GtkWidget * menudata3 = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem21"));
 
 
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
@@ -2076,6 +2470,9 @@ int main(int argc, char * argv[]) {
  	g_signal_connect(G_OBJECT(menusearch1), "activate", G_CALLBACK(cloth_info_search), "1");
  	g_signal_connect(G_OBJECT(menusearch2), "activate", G_CALLBACK(cloth_info_search), "2");
  	g_signal_connect(G_OBJECT(menusearch3), "activate", G_CALLBACK(cloth_info_search), "3");
+ 	g_signal_connect(G_OBJECT(menudata1), "activate", G_CALLBACK(data_count), "1");
+ 	g_signal_connect(G_OBJECT(menudata2), "activate", G_CALLBACK(data_count), "2");
+ 	g_signal_connect(G_OBJECT(menudata3), "activate", G_CALLBACK(data_count), "3");
 
 	g_object_unref(G_OBJECT(builder));
 
