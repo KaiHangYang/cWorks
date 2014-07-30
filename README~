@@ -1,0 +1,5 @@
+my cworks using gtk
+
+如果你的电脑上配置好了gcc和gtk3.0的环境
+命令行运行 gcc `pkg-config --cflags --libs gtk+-3.0` -o 服装管理系统\ By\ 杨凯航 main.c mainfunc.c
+即可编译完成

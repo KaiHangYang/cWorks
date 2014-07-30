@@ -13,19 +13,19 @@
 				"sellInfo":{
 					"0":{
 						"clothName":"马克华菲羽绒服",
-						"soldTime":"20091212",
+						"soldTime":"20090212",
 						"consumerName":"张三",
 						"consumerComment":1
 					},
 					"1":{
 						"clothName":"马克华菲羽绒服",
-						"soldTime":"20101111",
+						"soldTime":"20100611",
 						"consumerName":"李四",
 						"consumerComment":3
 					},
 					"2":{
 						"clothName":"马克华菲羽绒服",
-						"soldTime":"20091111",
+						"soldTime":"20090511",
 						"consumerName":"李四",
 						"consumerComment":3
 					}
