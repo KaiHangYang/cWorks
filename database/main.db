@@ -207,13 +207,7 @@
 				"clothSoldNum":	0,
 				"clothComment":	0,
 				"sellInfo":	{
-					"0":	{
-						"clothName":	"ÿºÙ‰à",
-						"soldTime":	"",
-						"consumerName":	"¨ÂÖãÂçéËè≤ÁæΩÁªíÊúç\",\n\t\t",
-						"consumerComment":	151587372
-					}
-				}
+			}
 			},
 			"3":	{
 				"clothType":	"2",
@@ -261,13 +255,7 @@
 				"clothSoldNum":	0,
 				"clothComment":	0,
 				"sellInfo":	{
-					"0":	{
-						"clothName":	"ÿºÙ‰à",
-						"soldTime":	"",
-						"consumerName":	"\"consumerComment\":\t3\n\t\t\t",
-						"consumerComment":	151587082
-					}
-				}
+			}
 			},
 			"2":	{
 				"clothType":	"3",

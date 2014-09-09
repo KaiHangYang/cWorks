@@ -1,0 +1,182 @@
+{
+	"0":	{
+		"typeNum":	"1",
+		"typeName":	"外套",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"1",
+				"clothName":	"马克华菲羽绒服",
+				"clothSex":	"0",
+				"clothPrice":	128,
+				"clothSoldNum":	3,
+				"clothComment":	3.330000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"马克华菲羽绒服",
+						"soldTime":	"20090212",
+						"consumerName":	"张三",
+						"consumerComment":	1
+					},
+					"1":	{
+						"clothName":	"马克华菲羽绒服",
+						"soldTime":	"20100611",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					},
+					"2":	{
+						"clothName":	"马克华菲羽绒服",
+						"soldTime":	"20090511",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					}
+				}
+			},
+			"1":	{
+				"clothType":	"1",
+				"clothName":	"菲羽绒服",
+				"clothSex":	"0",
+				"clothPrice":	138,
+				"clothSoldNum":	2,
+				"clothComment":	3.500000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"菲羽绒服",
+						"soldTime":	"20131212",
+						"consumerName":	"张三",
+						"consumerComment":	4
+					},
+					"1":	{
+						"clothName":	"菲羽绒服",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	1
+					}
+				}
+			}
+		}
+	},
+	"1":	{
+		"typeNum":	"2",
+		"typeName":	"外搭",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"2",
+				"clothName":	"马克",
+				"clothSex":	"0",
+				"clothPrice":	128,
+				"clothSoldNum":	2,
+				"clothComment":	3.500000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"马克",
+						"soldTime":	"20091212",
+						"consumerName":	"张三",
+						"consumerComment":	4
+					},
+					"1":	{
+						"clothName":	"马克",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					}
+				}
+			},
+			"1":	{
+				"clothType":	"2",
+				"clothName":	"菲服",
+				"clothSex":	"0",
+				"clothPrice":	138,
+				"clothSoldNum":	2,
+				"clothComment":	3.500000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"菲服",
+						"soldTime":	"20131212",
+						"consumerName":	"张三",
+						"consumerComment":	4
+					},
+					"1":	{
+						"clothName":	"菲服",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					},
+					"2":	{
+						"clothName":	"菲服",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					},
+					"3":	{
+						"clothName":	"菲服",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					},
+					"4":	{
+						"clothName":	"菲服",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					}
+				}
+			}
+		}
+	},
+	"2":	{
+		"typeNum":	"3",
+		"typeName":	"神恶魔",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"3",
+				"clothName":	"马克华",
+				"clothSex":	"0",
+				"clothPrice":	180,
+				"clothSoldNum":	3,
+				"clothComment":	3.330000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"马克华",
+						"soldTime":	"20091212",
+						"consumerName":	"张三",
+						"consumerComment":	1
+					},
+					"1":	{
+						"clothName":	"马克华",
+						"soldTime":	"20101111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					},
+					"2":	{
+						"clothName":	"马克华",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	3
+					}
+				}
+			},
+			"1":	{
+				"clothType":	"3",
+				"clothName":	"菲羽",
+				"clothSex":	"0",
+				"clothPrice":	138,
+				"clothSoldNum":	2,
+				"clothComment":	3.500000,
+				"sellInfo":	{
+					"0":	{
+						"clothName":	"菲羽",
+						"soldTime":	"20131212",
+						"consumerName":	"张三",
+						"consumerComment":	4
+					},
+					"1":	{
+						"clothName":	"菲羽",
+						"soldTime":	"20091111",
+						"consumerName":	"李四",
+						"consumerComment":	1
+					}
+				}
+			}
+		}
+	}
+}

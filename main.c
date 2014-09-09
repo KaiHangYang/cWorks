@@ -21,6 +21,9 @@ int main(int argc, char * argv[]) {
 	treeview = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview"));
  	select = gtk_tree_view_get_selection(treeview);
  	gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
+
+ 	//add icon
+ 	gtk_window_set_icon(GTK_WINDOW(window), create_pixbuf("wolf.png"));
 	//For menu
 	GtkWidget * menuquit = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem5"));
 	GtkWidget * menushowtypeall = GTK_WIDGET(gtk_builder_get_object(builder, "imagemenuitem4"));
@@ -52,7 +55,7 @@ int main(int argc, char * argv[]) {
 	
 
 
-	/*connect signal*/
+	/*菜单的信号绑定*/
 	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(main_quit), NULL);
 	g_signal_connect(G_OBJECT(menuquit), "activate", G_CALLBACK(main_quit), NULL);
 	g_signal_connect(G_OBJECT(menushowtypeall), "activate", G_CALLBACK(show_info_all), "t");

@@ -1,0 +1,182 @@
+{
+	"0":	{
+		"typeNum":	"1",
+		"typeName":	"外套",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"1",
+				"clothName":	"马克华菲羽绒服",
+				"clothSex":	"0",
+				"clothPrice":	128,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"1":	{
+				"clothType":	"1",
+				"clothName":	"希野羽绒服",
+				"clothSex":	"1",
+				"clothPrice":	210,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"2":	{
+				"clothType":	"1",
+				"clothName":	"易尚T恤",
+				"clothSex":	"9",
+				"clothPrice":	120,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"3":	{
+				"clothType":	"1",
+				"clothName":	"伊人风采皮草",
+				"clothSex":	"1",
+				"clothPrice":	578,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"4":	{
+				"clothType":	"1",
+				"clothName":	"水木年华服装",
+				"clothSex":	"0",
+				"clothPrice":	345,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			}
+		}
+	},
+	"1":	{
+		"typeNum":	"2",
+		"typeName":	"内搭",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"2",
+				"clothName":	"依加米服饰",
+				"clothSex":	"1",
+				"clothPrice":	120.300003,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"1":	{
+				"clothType":	"2",
+				"clothName":	"成功行服饰",
+				"clothSex":	"0",
+				"clothPrice":	349,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"2":	{
+				"clothType":	"2",
+				"clothName":	"雁皇",
+				"clothSex":	"0",
+				"clothPrice":	564,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"3":	{
+				"clothType":	"2",
+				"clothName":	"叶狄纳",
+				"clothSex":	"9",
+				"clothPrice":	453,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			}
+		}
+	},
+	"2":	{
+		"typeNum":	"3",
+		"typeName":	"下装",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"3",
+				"clothName":	"雅袖",
+				"clothSex":	"1",
+				"clothPrice":	123,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"1":	{
+				"clothType":	"3",
+				"clothName":	"风吹来",
+				"clothSex":	"1",
+				"clothPrice":	345,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"2":	{
+				"clothType":	"3",
+				"clothName":	"依玛",
+				"clothSex":	"1",
+				"clothPrice":	234,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			}
+		}
+	},
+	"3":	{
+		"typeNum":	"4",
+		"typeName":	"套装",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"4",
+				"clothName":	"酷客",
+				"clothSex":	"1",
+				"clothPrice":	342,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			},
+			"1":	{
+				"clothType":	"4",
+				"clothName":	"超恒牛仔",
+				"clothSex":	"0",
+				"clothPrice":	123,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			}
+		}
+	},
+	"4":	{
+		"typeNum":	"5",
+		"typeName":	"特色服",
+		"baseInfo":	{
+			"0":	{
+				"clothType":	"5",
+				"clothName":	"秀衣场",
+				"clothSex":	"1",
+				"clothPrice":	123,
+				"clothSoldNum":	0,
+				"clothComment":	0,
+				"sellInfo":	{
+			}
+			}
+		}
+	}
+}

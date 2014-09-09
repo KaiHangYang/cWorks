@@ -334,5 +334,6 @@ extern void main_new (GtkWidget * widget);
 extern void main_quit(GtkWidget * widget);
 //软件的初始化
 extern void init();
-
+//添加图标
+extern GdkPixbuf *create_pixbuf(const gchar* filename);
 //结束
